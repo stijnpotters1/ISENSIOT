@@ -1,10 +1,13 @@
 # ISENSIOT-robot-arm
+
+
+
  This is an arduino directory for the hand gesture controlled robot arm
 
 
- Bluetooth configuratie:
+ ### Bluetooth configuratie:
 
- Slave:
+ **Slave**:
 
  1. Houdt het knopje van de bluetooth module in, waar je de slave van wilt maken.
  2. Zet power aan en check of het lampje van de hc-05 module per 2 seconde 1 keer knippert
@@ -18,9 +21,9 @@
  8. Vraag nu het mac adres van je hc-05 module op met "AT+ADDR?". Schrijf op, of bewaar het mac adres wat je terug krijgt.
 
 
- Master.
+ **Master**.
 
- 9. Houdt het knopje van de bluetooth module in, waar je de slave van wilt maken.
+ 9. Houdt het knopje van de bluetooth module in, waar je de master van wilt maken.
  10. Zet power aan en check of het lampje van de hc-05 module per 2 seconde 1 keer knippert
  11. Haal de rx en tx kabels er uit, en upload een lege schema (wel setup en loop)
  12. Stop de rx en tx kabels weer terug als het lege schema is geupload.
