@@ -3,13 +3,6 @@
 
 Adafruit_PWMServoDriver servoDriver = Adafruit_PWMServoDriver();
 
-int currentPositionServo1 = 0; //Servo base
-int currentPositionServo2 = 0; //Servo waist
-int currentPositionServo3 = 0; //Servo arm1
-int currentPositionServo4 = 0; //Servo arm2
-int currentPositionServo5 = 0; //Servo arm3
-int currentPositionServo6 = 0; //Servo gripper
-
 const int SERVO1_PIN_NR = 0;
 const int SERVO2_PIN_NR = 2;
 const int SERVO3_PIN_NR = 4;
@@ -17,13 +10,20 @@ const int SERVO4_PIN_NR = 6;
 const int SERVO5_PIN_NR = 8;
 const int SERVO6_PIN_NR = 10;
 
-String incomingCommand = "";
-
 const int SERVO_DELAY = 5;
 const int PWM_FREQUENCY = 60;
 
+int currentPositionServo1 = 0; //Servo base
+int currentPositionServo2 = 0; //Servo waist
+int currentPositionServo3 = 0; //Servo arm1
+int currentPositionServo4 = 0; //Servo arm2
+int currentPositionServo5 = 0; //Servo arm3
+int currentPositionServo6 = 0; //Servo gripper
+
+String incomingCommand = "";
+
 void InitializeServoDriver() {
-  Serial.begin(9600);
+  Serial.begin(38400);
   servoDriver.begin();
   servoDriver.setPWMFreq(PWM_FREQUENCY);
   delay(10);
@@ -52,6 +52,7 @@ void setup() {
 
 void loop() {
   // send data only when you receive data:
+    
   if (Serial.available() > 0) {
     // read the incoming byte:
     incomingCommand = Serial.readString();
