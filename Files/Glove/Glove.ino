@@ -29,6 +29,15 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly:
-    BTSerial.write("s3 150");
-    delay(2000);
+    Serial.println("Enter the servo nr.");  
+    while (Serial.available() == 0) {}  
+    servoNr = Serial.readString(); //Reading the Input string from Serial port.  
+    Serial.println("Enter the degrees");  
+    while (Serial.available() == 0) {}  
+    degrees = Serial.readString();
+
+    servoNr.trim();
+    degrees.trim();
+
+    sendData(servoNr, degrees);
 }
