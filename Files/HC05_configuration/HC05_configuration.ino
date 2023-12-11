@@ -1,6 +1,9 @@
 #include <SoftwareSerial.h>
 
-SoftwareSerial BTSerial(10, 11);   // RX | TX
+#define TX 2
+#define RX 3
+
+SoftwareSerial BTSerial(TX, RX);
 
 void setup() {
   pinMode(9, OUTPUT);    /* this pin will pull the HC-05 pin 34 (KEY pin) HIGH to switch module to AT mode */
