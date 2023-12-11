@@ -1,7 +1,12 @@
 #include <Adafruit_PWMServoDriver.h>
 #include <Wire.h>
+#include <SoftwareSerial.h>
+
+#define TX 2
+#define RX 3
 
 Adafruit_PWMServoDriver servoDriver = Adafruit_PWMServoDriver();
+SoftwareSerial BTSerial(TX, RX);
 
 const int SERVO1_PIN_NR = 0;
 const int SERVO2_PIN_NR = 2;
@@ -29,6 +34,10 @@ void InitializeServoDriver() {
   delay(10);
 }
 
+void InitializeBluetoothModule() {
+  BTSerial.begin(38400);
+}
+
 void MoveServoToPosition(int newServoPosition, int &currentServoPosition, int servoPinNr) {
   Serial.println(String("Moving servo:pin(") + servoPinNr + ") from " + currentServoPosition + " to " + newServoPosition);
   if(newServoPosition <= currentServoPosition) {
@@ -48,15 +57,17 @@ void MoveServoToPosition(int newServoPosition, int &currentServoPosition, int se
 
 void setup() {
   InitializeServoDriver();
+  InitializeBluetoothModule();
 }
 
 void loop() {
   // send data only when you receive data:
     
-  if (Serial.available() > 0) {
+  if (BTSerial.available() > 0) {
     // read the incoming byte:
-    incomingCommand = Serial.readString();
 
+    incomingCommand = BTSerial.readString();
+    
     // say what you got:
     Serial.print("I received: ");
     Serial.println(incomingCommand);
