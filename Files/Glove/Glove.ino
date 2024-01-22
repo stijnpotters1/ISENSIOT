@@ -5,17 +5,26 @@
 
 SoftwareSerial BTSerial(TX, RX);
 
-String servoNr = "";  
+String servoNr = "6";  
 String degrees = ""; 
+
+const int POTENTIOMETER_PIN_NUMBER = A6;
+struct MinMax {
+  int min;
+  int max;
+};
+
+struct MinMax servo = {120, 240};
+struct MinMax pot = {600, 850}; //Eerst kijken wat echte waardes zijn
+int oldValue = 0;
+int oldReturnValue = 0;
 
 void sendData(String servoNr, String degrees) {
   String message = "s" + servoNr + ": " + degrees;
   int message_len = message.length() + 1; 
 
-  // Prepare the character array (the buffer) 
   char char_array[message_len];
   
-  // Copy it over 
   message.toCharArray(char_array, message_len);
 
   BTSerial.write(char_array);
@@ -28,16 +37,23 @@ void setup() {
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
-    Serial.println("Enter the servo nr.");  
-    while (Serial.available() == 0) {}  
-    servoNr = Serial.readString(); //Reading the Input string from Serial port.  
-    Serial.println("Enter the degrees");  
-    while (Serial.available() == 0) {}  
-    degrees = Serial.readString();
+  gripper();
+}
 
-    servoNr.trim();
-    degrees.trim();
+void gripper() {
+    int currentValue = analogRead(POTENTIOMETER_PIN_NUMBER);
 
-    sendData(servoNr, degrees);
+  if(oldValue != currentValue) {
+    int servoDelta = servo.max - servo.min;
+    int potDelta = pot.max - pot.min;
+    int returnValue = ((float)servoDelta * ((float)currentValue /(float)potDelta)) - servo.min;
+    String degrees = (String)returnValue;
+
+    if(oldReturnValue != returnValue) {
+      sendData(servoNr, degrees);
+      oldReturnValue = returnValue;
+      delay(2500);
+    }
+  }
+  oldValue = currentValue;
 }
