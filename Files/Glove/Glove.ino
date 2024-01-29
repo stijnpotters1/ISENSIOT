@@ -124,6 +124,12 @@ void setup() {
 
 void loop() {
   gripper();
+
+String potmeterMovement(int PotPinNumber, struct MinMax potReach, struct MinMax servoReach) {
+  int potmeterValue = analogRead(PotPinNumber);
+  int servoValue = map(potmeterValue, potReach.min, potReach.max, servoReach.min, servoReach.max );
+  
+  return (String)servoValue;
 }
 
 void gripper() {
