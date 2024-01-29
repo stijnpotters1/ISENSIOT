@@ -9,8 +9,32 @@
 SoftwareSerial BTSerial(TX, RX);
 MPU6050 mpu;
 
-String servoNr = "6";  
-String degrees = ""; 
+const float OFFSET_GY_X = 108;
+const float OFFSET_GY_Y = -47;
+const float OFFSET_GY_Z = 35;
+const float OFFSET_ACCEL_X = -302;
+const float OFFSET_ACCEL_Y = -864;
+const float OFFSET_ACCEL_Z = 939;
+
+int16_t ax, ay, az, gx, gy, gz;
+String servoDegreesOne, servoDegreesTwo, servoDegreesThree, servoDegreesFour, servoDegreesFive, servoDegreesSix; 
+
+float totalRotationX = 0.0;
+float totalRotationY = 0.0;
+float totalRotationZ = 0.0;
+
+unsigned long previousMillisGyro = 0;
+
+const float GRAVITY = 9.81;  // Acceleration due to gravity in m/s^2
+unsigned long previousMillisAcceleration = 0;
+
+float totalDistanceX = 0.0;
+float totalDistanceY = 0.0;
+float totalDistanceZ = 0.0;
+  
+const int POTENTIOMETER_PIN_NUMBER_LEFT_RIGHT = A1;
+const int POTENTIOMETER_PIN_NUMBER_FORWARD_BACKWARD = A2;
+const int POTENTIOMETER_PIN_NUMBER_GRIPPER = A7;
 
 const int POTENTIOMETER_PIN_NUMBER = A6;
 struct MinMax {
