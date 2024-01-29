@@ -91,6 +91,16 @@ String gyroMovement(int axis, struct MinMax wristReach, struct MinMax servoPWMRe
 
    return (String) mappedRotation;
 }
+
+String measureGripperMovement(struct MinMax potReach, struct MinMax servoReach) {
+  int currentPotentiometerMeasurement = analogRead(POTENTIOMETER_PIN_NUMBER_GRIPPER);
+
+  currentPotentiometerMeasurement = constrain(currentPotentiometerMeasurement, potReach.min, potReach.max);
+
+  int gripperValue = map(currentPotentiometerMeasurement, potReach.min, potReach.max, servoReach.min, servoReach.max);
+
+  return (String)gripperValue;
+}
   int message_len = message.length() + 1; 
 
   char char_array[message_len];
