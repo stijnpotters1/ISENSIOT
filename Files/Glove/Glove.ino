@@ -122,8 +122,6 @@ void setup() {
   initializeGyro();
 }
 
-void loop() {
-  gripper();
 
 String potmeterMovement(int PotPinNumber, struct MinMax potReach, struct MinMax servoReach) {
   int potmeterValue = analogRead(PotPinNumber);
@@ -132,20 +130,21 @@ String potmeterMovement(int PotPinNumber, struct MinMax potReach, struct MinMax 
   return (String)servoValue;
 }
 
-void gripper() {
-    int currentValue = analogRead(POTENTIOMETER_PIN_NUMBER);
 
-  if(oldValue != currentValue) {
-    int servoDelta = servo.max - servo.min;
-    int potDelta = pot.max - pot.min;
-    int returnValue = ((float)servoDelta * ((float)currentValue /(float)potDelta)) - servo.min;
-    String degrees = (String)returnValue;
+void loop() {
+  mpu.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
+  unsigned long currentMillis = millis();  
 
-    if(oldReturnValue != returnValue) {
-      sendData(servoNr, degrees);
-      oldReturnValue = returnValue;
-      delay(2500);
-    }
-  }
-  oldValue = currentValue;
+  servoDegreesOne = potmeterMovement(POTENTIOMETER_PIN_NUMBER_LEFT_RIGHT, joyStickReach, servoPWMReachZeroToSixHunderd);
+  servoDegreesTwo = potmeterMovement(POTENTIOMETER_PIN_NUMBER_FORWARD_BACKWARD, joyStickReach, servoPWMReachZeroToSixHunderd);
+  
+  servoDegreesThree = gyroMovement(gz, upDownReach,  servoPWMReachSixHunderdToZero, totalRotationZ);
+  
+  servoDegreesFour = gyroMovement(gy, wristReachRotation,  servoPWMReachZeroToSixHunderd, totalRotationY);
+  servoDegreesFive = gyroMovement(gx, wristReachReciprocating,  servoPWMReachZeroToSixHunderd, totalRotationX);
+
+  servoDegreesSix = measureGripperMovement(pot, servoPWMReachZeroToSixHunderd);
+ 
+  sendData(); 
+
 }
