@@ -58,6 +58,18 @@ int potentiometerDelta = 0;
 int previousPotentiometerMeasurement = 0;
 
 
+void initializeGyro() {
+  mpu.initialize();
+  mpu.setDLPFMode(MPU6050_DLPF_BW_5);
+  
+  mpu.setXGyroOffset(OFFSET_GY_X);
+  mpu.setYGyroOffset(OFFSET_GY_Y);
+  mpu.setZGyroOffset(OFFSET_GY_Z);
+  mpu.setXAccelOffset(OFFSET_ACCEL_X);
+  mpu.setYAccelOffset(OFFSET_ACCEL_Y);
+  mpu.setZAccelOffset(OFFSET_ACCEL_Z);
+  delay(100);
+}  
   int message_len = message.length() + 1; 
 
   char char_array[message_len];
