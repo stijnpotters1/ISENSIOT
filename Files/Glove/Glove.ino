@@ -70,6 +70,27 @@ void initializeGyro() {
   mpu.setZAccelOffset(OFFSET_ACCEL_Z);
   delay(100);
 }  
+
+String gyroMovement(int axis, struct MinMax wristReach, struct MinMax servoPWMReach, float& totalRotation) {
+   unsigned long currentMillis = millis();  
+   float elapsedTime = (currentMillis - previousMillisGyro) / 1000.0;
+
+   float rotationChange = axis * elapsedTime;
+   totalRotation += (int)rotationChange;
+
+   int mappedRotation = map(totalRotation, wristReach.min, wristReach.max, servoPWMReach.min, servoPWMReach.max);
+
+   if (mappedRotation >= 600) {
+     mappedRotation = 600;
+   }
+   else if (mappedRotation <= 0) {
+     mappedRotation = 0;
+   }
+
+   previousMillisGyro = currentMillis;
+
+   return (String) mappedRotation;
+}
   int message_len = message.length() + 1; 
 
   char char_array[message_len];
