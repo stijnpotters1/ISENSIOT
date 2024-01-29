@@ -36,19 +36,28 @@ const int POTENTIOMETER_PIN_NUMBER_LEFT_RIGHT = A1;
 const int POTENTIOMETER_PIN_NUMBER_FORWARD_BACKWARD = A2;
 const int POTENTIOMETER_PIN_NUMBER_GRIPPER = A7;
 
-const int POTENTIOMETER_PIN_NUMBER = A6;
 struct MinMax {
   int min;
   int max;
 };
 
-struct MinMax servo = {120, 240};
-struct MinMax pot = {600, 850}; //Eerst kijken wat echte waardes zijn
-int oldValue = 0;
-int oldReturnValue = 0;
+struct MinMax servoPWMReachZeroToSixHunderd = {0, 600};
+struct MinMax servoPWMReachSixHunderdToZero = {600, 0};
 
-void sendData(String servoNr, String degrees) {
-  String message = "s" + servoNr + ": " + degrees;
+struct MinMax joyStickReach = {0, 1000};
+
+struct MinMax wristReachReciprocating = {-150, 150};
+struct MinMax wristReachRotation = {-600, 600};
+struct MinMax upDownReach = {-3500, 3500};
+struct MinMax servoGripper = {120, 240};
+
+
+struct MinMax pot = {450, 800}; //Eerst kijken wat echte waardes zijn
+int servoDelta = 0;
+int potentiometerDelta = 0;
+int previousPotentiometerMeasurement = 0;
+
+
   int message_len = message.length() + 1; 
 
   char char_array[message_len];
