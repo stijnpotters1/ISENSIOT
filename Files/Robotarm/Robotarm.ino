@@ -10,7 +10,8 @@ Adafruit_PWMServoDriver servoDriver = Adafruit_PWMServoDriver();
 SoftwareSerial BTSerial(TX, RX);
 
 const int STEP_PRECISION_SERVO = 1;
-const int SERVO_DELAY_PER_STEP = 10;
+const int MAX_STEPS_PER_MOVEMENT_TICK = 10;
+const int SERVO_DELAY_PER_STEP = 1;
 const int PWM_FREQUENCY = 60;
 
 String incomingCommand = "";
@@ -38,19 +39,31 @@ void InitializeBluetoothModule() {
 }
 
 void MoveServoToPosition(int newServoPosition, int &currentServoPosition, int servoPinNr) {
-  if(newServoPosition <= currentServoPosition) {
-    for (int pos = currentServoPosition; pos >= newServoPosition; pos -= STEP_PRECISION_SERVO) {
+  if(newServoPosition < currentServoPosition) {
+    for (int i = 0; i < MAX_STEPS_PER_MOVEMENT_TICK; i++) {
+      int pos = currentServoPosition - STEP_PRECISION_SERVO;
+
+      if(pos < newServoPosition) {
+        pos = newServoPosition;
+      }
+
       servoDriver.setPWM(servoPinNr, 0, pos);
       delay(SERVO_DELAY_PER_STEP);
-    }
-  } else {
-    for (int pos = currentServoPosition; pos <= newServoPosition; pos += STEP_PRECISION_SERVO) {
+      currentServoPosition = pos;
+    }  
+  } else if (newServoPosition > currentServoPosition) {
+    for (int i = 0; i < MAX_STEPS_PER_MOVEMENT_TICK; i++) {
+      int pos = currentServoPosition + STEP_PRECISION_SERVO;
+
+      if(pos > newServoPosition) {
+        pos = newServoPosition;
+      }
+
       servoDriver.setPWM(servoPinNr, 0, pos);
       delay(SERVO_DELAY_PER_STEP);
-    }
+      currentServoPosition = pos;
+    }  
   }
-  currentServoPosition = newServoPosition;
-  //Serial.println(String("Movement of servo: " + servoPinNr + " is done.");
 }
 
 void MoveServos() {
@@ -58,6 +71,16 @@ void MoveServos() {
     if(servos[i].currentPWMValue != servos[i].nextPWMValue) {
       MoveServoToPosition(servos[i].nextPWMValue, servos[i].currentPWMValue, servos[i].SERVO_PIN_NR);
     }
+  }
+}
+
+void SetNextPWMValue(int index, int value) {
+  if(servos[index].MIN_PWM_VALUE > value) {
+    servos[index].nextPWMValue = servos[index].MIN_PWM_VALUE;
+  } else if(servos[index].MAX_PWM_VALUE < value) {
+    servos[index].nextPWMValue = servos[index].MAX_PWM_VALUE;
+  } else {
+    servos[index].nextPWMValue = value;
   }
 }
 
@@ -75,19 +98,33 @@ void loop() {
     Serial.print("I received: ");
     Serial.println(incomingCommand);
 
+    incomingCommand = incomingCommand.substring(0, incomingCommand.length() - 2);
+
+    int command = incomingCommand.indexOf(';');
+    
+    while (command != -1) {
+        incomingCommand = incomingCommand.substring(command + 1);
+        command = incomingCommand.indexOf(';');
+    }
+
+    Serial.println("done");
+    Serial.println(incomingCommand);
+
     while (incomingCommand.length() > 0) {
       int index = incomingCommand.indexOf(',');
       if (index == -1) {
         if(servoCounter == (N_SERVO_MOTORS - 1)) {
-          servos[servoCounter].nextPWMValue = incomingCommand.toInt();
-          Serial.println(incomingCommand);
+          int value = incomingCommand.substring(0, incomingCommand.length()).toInt();
+          SetNextPWMValue(servoCounter, value);
+          Serial.println(incomingCommand.substring(0, incomingCommand.length()));
         } else {
           Serial.println("Incomming command format error!");
         }
         break;
       } else {
         Serial.println(incomingCommand.substring(0, index));
-        servos[servoCounter].nextPWMValue = incomingCommand.substring(0, index).toInt();
+        int value = incomingCommand.substring(0, index).toInt();
+        SetNextPWMValue(servoCounter, value);
         incomingCommand = incomingCommand.substring(index + 1);
         servoCounter++;
       }
@@ -95,4 +132,4 @@ void loop() {
   }
 
   MoveServos();
-} 
+}
