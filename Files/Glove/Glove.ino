@@ -101,6 +101,11 @@ String measureGripperMovement(struct MinMax potReach, struct MinMax servoReach) 
 
   return (String)gripperValue;
 }
+
+void sendData() {
+  String message = servoDegreesOne + "," + servoDegreesTwo + "," + servoDegreesThree + "," + servoDegreesFour + "," + servoDegreesFive + "," + servoDegreesSix + ";";
+  Serial.println(message);
+  
   int message_len = message.length() + 1; 
 
   char char_array[message_len];
@@ -114,6 +119,7 @@ void setup() {
   // put your setup code here, to run once:
   Serial.begin(38400);
   BTSerial.begin(38400);
+  initializeGyro();
 }
 
 void loop() {
