@@ -4,28 +4,27 @@
 
 #define TX 2
 #define RX 3
+#define N_SERVO_MOTORS 6
 
 Adafruit_PWMServoDriver servoDriver = Adafruit_PWMServoDriver();
 SoftwareSerial BTSerial(TX, RX);
 
-const int SERVO1_PIN_NR = 0;
-const int SERVO2_PIN_NR = 2;
-const int SERVO3_PIN_NR = 4;
-const int SERVO4_PIN_NR = 6;
-const int SERVO5_PIN_NR = 8;
-const int SERVO6_PIN_NR = 10;
-
-const int SERVO_DELAY = 5;
+const int STEP_PRECISION_SERVO = 1;
+const int SERVO_DELAY_PER_STEP = 10;
 const int PWM_FREQUENCY = 60;
 
-int currentPositionServo1 = 0; //Servo base
-int currentPositionServo2 = 0; //Servo waist
-int currentPositionServo3 = 0; //Servo arm1
-int currentPositionServo4 = 0; //Servo arm2
-int currentPositionServo5 = 0; //Servo arm3
-int currentPositionServo6 = 0; //Servo gripper
-
 String incomingCommand = "";
+
+struct servoMotor {
+  const int SERVO_PIN_NR;
+  const int MAX_PWM_VALUE;
+  const int MIN_PWM_VALUE;
+  int currentPWMValue;
+  int nextPWMValue;
+};
+
+// Order of the servos is base, waist, arm1, arm2, arm3, gripper
+struct servoMotor servos[N_SERVO_MOTORS] = {{0, 600, 120, 340, 340}, {2, 600, 120, 400, 400}, {4, 600, 120, 450, 450}, {6, 600, 120, 340, 340}, {8, 600, 120, 120, 120}, {10, 600, 120, 240, 240}};
 
 void InitializeServoDriver() {
   Serial.begin(38400);
@@ -39,20 +38,27 @@ void InitializeBluetoothModule() {
 }
 
 void MoveServoToPosition(int newServoPosition, int &currentServoPosition, int servoPinNr) {
-  Serial.println(String("Moving servo:pin(") + servoPinNr + ") from " + currentServoPosition + " to " + newServoPosition);
   if(newServoPosition <= currentServoPosition) {
-    for (int pos = currentServoPosition; pos >= newServoPosition; pos -= 1) {
+    for (int pos = currentServoPosition; pos >= newServoPosition; pos -= STEP_PRECISION_SERVO) {
       servoDriver.setPWM(servoPinNr, 0, pos);
-      delay(SERVO_DELAY);
+      delay(SERVO_DELAY_PER_STEP);
     }
   } else {
-    for (int pos = currentServoPosition; pos <= newServoPosition; pos += 1) {
+    for (int pos = currentServoPosition; pos <= newServoPosition; pos += STEP_PRECISION_SERVO) {
       servoDriver.setPWM(servoPinNr, 0, pos);
-      delay(SERVO_DELAY);
+      delay(SERVO_DELAY_PER_STEP);
     }
   }
   currentServoPosition = newServoPosition;
-  Serial.println(String("Movement of servo:pin(") + servoPinNr + ") is done.");
+  //Serial.println(String("Movement of servo: " + servoPinNr + " is done.");
+}
+
+void MoveServos() {
+  for (int i = 0; i < N_SERVO_MOTORS; i++) {
+    if(servos[i].currentPWMValue != servos[i].nextPWMValue) {
+      MoveServoToPosition(servos[i].nextPWMValue, servos[i].currentPWMValue, servos[i].SERVO_PIN_NR);
+    }
+  }
 }
 
 void setup() {
@@ -60,46 +66,33 @@ void setup() {
   InitializeBluetoothModule();
 }
 
-void loop() {
-  // send data only when you receive data:
-    
-  if (BTSerial.available() > 0) {
+void loop() {   
+  if (Serial.available() > 0) {
     // read the incoming byte:
-
-    incomingCommand = BTSerial.readString();
-    
+    incomingCommand = Serial.readString();
+    int servoCounter = 0;
     // say what you got:
     Serial.print("I received: ");
     Serial.println(incomingCommand);
 
-    int servoNr = incomingCommand.substring(1,2).toInt();
-    int servoCommand = incomingCommand.substring(4).toInt();
-
-    switch(servoNr) {
-      case 1:
-        Serial.println("Servo 1");
-        MoveServoToPosition(servoCommand, currentPositionServo1, SERVO1_PIN_NR);
+    while (incomingCommand.length() > 0) {
+      int index = incomingCommand.indexOf(',');
+      if (index == -1) {
+        if(servoCounter == (N_SERVO_MOTORS - 1)) {
+          servos[servoCounter].nextPWMValue = incomingCommand.toInt();
+          Serial.println(incomingCommand);
+        } else {
+          Serial.println("Incomming command format error!");
+        }
         break;
-      case 2:
-        Serial.println("Servo 2");
-        MoveServoToPosition(servoCommand, currentPositionServo2, SERVO2_PIN_NR);
-        break;
-      case 3:
-        Serial.println("Servo 3");
-        MoveServoToPosition(servoCommand, currentPositionServo3, SERVO3_PIN_NR);
-        break;
-      case 4:
-        Serial.println("Servo 4");
-        MoveServoToPosition(servoCommand, currentPositionServo4, SERVO4_PIN_NR);
-        break;
-      case 5:
-        Serial.println("Servo 5");
-        MoveServoToPosition(servoCommand, currentPositionServo5, SERVO5_PIN_NR);
-        break;
-      case 6:
-        Serial.println("Servo 6");
-        MoveServoToPosition(servoCommand, currentPositionServo6, SERVO6_PIN_NR);
-        break;
+      } else {
+        Serial.println(incomingCommand.substring(0, index));
+        servos[servoCounter].nextPWMValue = incomingCommand.substring(0, index).toInt();
+        incomingCommand = incomingCommand.substring(index + 1);
+        servoCounter++;
+      }
     }
   }
-}
+
+  MoveServos();
+} 

@@ -1,9 +1,13 @@
 #include <SoftwareSerial.h>
+#include <MPU6050.h>
+#include "I2Cdev.h"
+#include <Wire.h>
 
 #define TX 2
 #define RX 3
 
 SoftwareSerial BTSerial(TX, RX);
+MPU6050 mpu;
 
 String servoNr = "6";  
 String degrees = ""; 
