@@ -58,4 +58,15 @@ Gebruik tijdens de **configuratie** voor de arduino **nano** tijdelijk dit circu
 
 ### Voltooid!
  24. als het goed is heb je nu een werkende bluetooth connectie. (Dit kan je testen door te checken of de messages van de arduino nano in de seriele monitor van 
-     de arduino uno binnen komen. 
+     de arduino uno binnen komen.
+
+
+## Final version robot arm en handschoen circuit diagrammen:
+### Robotarm
+![image](https://github.com/stijnpotters1/ISENSIOT/assets/93516547/7bed86b9-cfd7-4ec8-887b-ab1e5679e73f)
+
+### Handschoen
+![image](https://github.com/stijnpotters1/ISENSIOT/assets/93516547/8a376df3-5afa-427f-9601-b21c8182507d)
+
+
+
