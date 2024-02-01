@@ -9,10 +9,10 @@
 SoftwareSerial BTSerial(TX, RX);
 MPU6050 mpu;
 
-const float OFFSET_GY_X = 108;
-const float OFFSET_GY_Y = -47;
-const float OFFSET_GY_Z = 35;
-const float OFFSET_ACCEL_X = -302;
+const float OFFSET_GY_X = 46;
+const float OFFSET_GY_Y = -10;
+const float OFFSET_GY_Z = 46;
+const float OFFSET_ACCEL_X = 990;
 const float OFFSET_ACCEL_Y = -864;
 const float OFFSET_ACCEL_Z = 939;
 
@@ -41,18 +41,21 @@ struct MinMax {
   int max;
 };
 
-struct MinMax servoPWMReachZeroToSixHunderd = {0, 600};
-struct MinMax servoPWMReachSixHunderdToZero = {600, 0};
+struct MinMax servoPWMReachZeroToSixHunderd = {120, 600};
+struct MinMax potPWMReachGripper = {300, 120};
+struct MinMax servoPWMReachSixHunderdToZero = {600, 120};
 
 struct MinMax joyStickReach = {0, 1000};
 
 struct MinMax wristReachReciprocating = {-150, 150};
 struct MinMax wristReachRotation = {-600, 600};
 struct MinMax upDownReach = {-3500, 3500};
-struct MinMax servoGripper = {120, 240};
+struct MinMax servoGripper = {0, 240};
+
+unsigned long timerMillis = 0;
 
 
-struct MinMax pot = {450, 800}; //Eerst kijken wat echte waardes zijn
+struct MinMax pot = {0, 200}; //Eerst kijken wat echte waardes zijn
 int servoDelta = 0;
 int potentiometerDelta = 0;
 int previousPotentiometerMeasurement = 0;
@@ -118,8 +121,9 @@ void sendData() {
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(38400);
-  BTSerial.begin(38400);
+  BTSerial.begin(115200);
   initializeGyro();
+  timerMillis = millis();
 }
 
 
@@ -134,17 +138,17 @@ String potmeterMovement(int PotPinNumber, struct MinMax potReach, struct MinMax 
 void loop() {
   mpu.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
   unsigned long currentMillis = millis();  
-
-  servoDegreesOne = potmeterMovement(POTENTIOMETER_PIN_NUMBER_LEFT_RIGHT, joyStickReach, servoPWMReachZeroToSixHunderd);
+  
+  servoDegreesOne = gyroMovement(gz, upDownReach,  servoPWMReachSixHunderdToZero, totalRotationZ);
   servoDegreesTwo = potmeterMovement(POTENTIOMETER_PIN_NUMBER_FORWARD_BACKWARD, joyStickReach, servoPWMReachZeroToSixHunderd);
-  
-  servoDegreesThree = gyroMovement(gz, upDownReach,  servoPWMReachSixHunderdToZero, totalRotationZ);
-  
+  servoDegreesThree = potmeterMovement(POTENTIOMETER_PIN_NUMBER_LEFT_RIGHT, joyStickReach, servoPWMReachZeroToSixHunderd); 
   servoDegreesFour = gyroMovement(gy, wristReachRotation,  servoPWMReachZeroToSixHunderd, totalRotationY);
   servoDegreesFive = gyroMovement(gx, wristReachReciprocating,  servoPWMReachZeroToSixHunderd, totalRotationX);
-
-  servoDegreesSix = measureGripperMovement(pot, servoPWMReachZeroToSixHunderd);
+  servoDegreesSix = measureGripperMovement(pot, potPWMReachGripper);
  
-  sendData(); 
-
+  if (currentMillis - timerMillis >= 2000)  //test whether the period has elapsed
+  {
+    sendData();
+    timerMillis = currentMillis;  //IMPORTANT to save the start time of the current LED state.
+  } 
 }
