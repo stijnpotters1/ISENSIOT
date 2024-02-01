@@ -25,7 +25,7 @@ struct servoMotor {
 };
 
 // Order of the servos is base, waist, arm1, arm2, arm3, gripper
-struct servoMotor servos[N_SERVO_MOTORS] = {{0, 600, 120, 340, 340}, {2, 600, 120, 400, 400}, {4, 600, 120, 450, 450}, {6, 600, 120, 340, 340}, {8, 600, 120, 120, 120}, {10, 600, 120, 240, 240}};
+struct servoMotor servos[N_SERVO_MOTORS] = {{0, 600, 120, 340, 340}, {2, 600, 120, 400, 400}, {4, 600, 120, 450, 450}, {6, 600, 120, 340, 340}, {8, 600, 120, 120, 120}, {10, 300, 120, 240, 240}};
 
 void InitializeServoDriver() {
   Serial.begin(38400);
@@ -35,7 +35,7 @@ void InitializeServoDriver() {
 }
 
 void InitializeBluetoothModule() {
-  BTSerial.begin(38400);
+  BTSerial.begin(115200);
 }
 
 void MoveServoToPosition(int newServoPosition, int &currentServoPosition, int servoPinNr) {
@@ -90,15 +90,15 @@ void setup() {
 }
 
 void loop() {   
-  if (Serial.available() > 0) {
+  if (BTSerial.available() > 0) {
     // read the incoming byte:
-    incomingCommand = Serial.readString();
+    incomingCommand = BTSerial.readString();
     int servoCounter = 0;
     // say what you got:
     Serial.print("I received: ");
     Serial.println(incomingCommand);
 
-    incomingCommand = incomingCommand.substring(0, incomingCommand.length() - 2);
+    incomingCommand = incomingCommand.substring(0, incomingCommand.length() - 1);
 
     int command = incomingCommand.indexOf(';');
     
